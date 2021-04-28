@@ -129,4 +129,3 @@ viewPaddle paddle =
 subscriptions : Model -> Sub Msg
 subscriptions _ = 
     Browser.Events.onAnimationFrameDelta OnAnimationFrame
-
