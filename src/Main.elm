@@ -3,6 +3,8 @@ module Main exposing (main)
 import Browser
 import Browser.Events
 import Json.Decode as Decode
+import Process
+import Task
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -24,7 +26,10 @@ main =
 type alias Model = 
     { ball : Ball
     , paddle : Paddle
+    , score : Int
+    , gameState : GameState
     }
+
 type alias Ball =
     { x : Int
     , y : Int
@@ -32,21 +37,28 @@ type alias Ball =
     , vx : Int
     , vy : Int
     }
+
 type alias Paddle =
     { x : Int
     , y : Int
     , width : Int
     , height : Int
     }
+
 type alias Flags = ()
+
 type Msg
     = OnAnimationFrame Float  -- it takes a float which is the no. of ms since the previous animation frame 
     | KeyDown PlayerAction
+    | SleepDone
+
 type PlayerAction
     = PaddleLeft
     | PaddleRight
 
-
+type GameState
+    = Playing
+    | Ended
 
 
 
@@ -55,9 +67,12 @@ init : Flags -> ( Model, Cmd Msg )
 init _ = 
     ( { ball = initBall
       , paddle = initPaddle
+      , score = 0
+      , gameState = Playing
     }
     , Cmd.none  
     )
+
 initBall : Ball
 initBall =
     { x = 250
@@ -66,6 +81,7 @@ initBall =
     , vx = 2
     , vy = 4
     }
+
 initPaddle : Paddle
 initPaddle = 
     { x = 225
@@ -77,10 +93,9 @@ initPaddle =
 
 
 
-
 -- VIEW
 view : Model -> Svg.Svg Msg
-view { ball, paddle } = 
+view { ball, paddle, score } = 
     svg
         [ width "500"
         , height "500"
@@ -89,6 +104,7 @@ view { ball, paddle } =
         ]
         [ viewBall ball
         , viewPaddle paddle
+        , viewScore score
         , rect -- TOP WALL
             [ x "0"
             , y "0"
@@ -136,12 +152,20 @@ viewPaddle paddle =
         ]
         []
 
-
-
+viewScore : Int -> Svg.Svg Msg
+viewScore score =
+    g
+        [ fontSize "50px"
+        , fontFamily "monospace"
+        , fill "#034e5e"
+        ]
+        [ text_ [ x "430", y "60", textAnchor "start" ]
+            [ text <| String.fromInt score ]
+        ]
 
 
 -- UPDATE
-update : Msg -> Model -> ( Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         OnAnimationFrame timeDelta ->
@@ -154,6 +178,7 @@ update msg model =
                 
                 shouldBounceVertically = 
                     shouldBallBounceVertically model.ball
+
                 shouldBounceHorizontally = 
                     shouldBallBounceHorizontally model.ball
                 vx = 
@@ -167,14 +192,36 @@ update msg model =
                     else
                         ball.vy
                         
-                updateBall = 
+                updatedBall = 
                      { ball
                         | x = ball.x + vx
                         , y = ball.y + vy
                         , vx = vx
                         , vy = vy
                     }
-            in ( { model | ball = updateBall }, Cmd.none )
+                
+                updatedScore =
+                    if shouldBounce then
+                        updateScore model.score
+                    else
+                        model.score        
+
+                ( gameState, cmd ) =
+                    case getGameState model.ball of 
+                        Playing ->
+                            ( Playing, Cmd.none )
+                        Ended ->
+                            let
+                                alwaysSleepDone : a -> Msg
+                                alwaysSleepDone =
+                                    always SleepDone
+                                delayCmd = 
+                                    Process.sleep 500
+                                        |> Task.perform alwaysSleepDone
+                            in
+                                ( Ended, delayCmd )
+    
+            in ( { model | ball = updatedBall, score = updatedScore, gameState = gameState }, cmd )
 
         KeyDown playerAction ->
             case playerAction of
@@ -182,10 +229,26 @@ update msg model =
                     ( { model | paddle = model.paddle |> updatePaddle -10}, Cmd.none )
                 PaddleRight ->
                     ( { model | paddle = model.paddle |> updatePaddle 10}, Cmd.none )
+        
+        SleepDone ->
+            let _ = Debug.log "restart" "game"
+            in ( { model | ball = initBall, score = 0, gameState = Playing }, Cmd.none )
 
 updatePaddle : Int -> Paddle -> Paddle
 updatePaddle amount paddle =
     { paddle | x = paddle.x + amount  |> clamp 10 (490 - paddle.width)}
+
+updateScore : Int -> Int
+updateScore score =
+    score + 1
+
+getGameState : Ball -> GameState
+getGameState ball =
+    if ball.y >= 550 then
+        Ended
+    else
+        Playing
+
 
 
 shouldBallBounce : Paddle -> Ball -> Bool
@@ -207,19 +270,21 @@ shouldBallBounceVertically ball =
     let 
         radius = ball.radius
     in
-        ball.y <= (10 + radius) || ball.y >= (490 - radius) -- need to remove the second statement after adding score
-
+        ball.y <= (10 + radius) 
 
 
 
 
 -- etc
 subscriptions : Model -> Sub Msg
-subscriptions _ = 
-    Sub.batch
-        [ Browser.Events.onAnimationFrameDelta OnAnimationFrame
-        , Browser.Events.onKeyDown (Decode.map KeyDown keyDecoder)
-        ]
+subscriptions model =
+    case model.gameState of
+        Playing -> 
+            Sub.batch
+                [ Browser.Events.onAnimationFrameDelta OnAnimationFrame
+                , Browser.Events.onKeyDown (Decode.map KeyDown keyDecoder) ]
+        Ended ->
+            Sub.none
 
 keyDecoder : Decode.Decoder PlayerAction
 keyDecoder = 
