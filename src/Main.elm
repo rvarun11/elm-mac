@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
+import Json.Decode as Decode
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Browser.Events exposing (onAnimationFrame)   
@@ -16,6 +17,7 @@ type alias Ball =
     { x : Int
     , y : Int
     , radius : Int
+    , vx : Int
     , vy : Int
     }
 
@@ -28,7 +30,13 @@ type alias Paddle =
 type alias Flags = ()
 type Msg
     = OnAnimationFrame Float  -- it takes a float which is the no. of ms since the previous animation frame 
- 
+    | KeyDown PlayerAction
+
+type PlayerAction
+    = PaddleLeft
+    | PaddleRight
+
+-- INIT 
 init : Flags -> ( Model, Cmd Msg )
 init _ = 
     ( { ball = initBall
@@ -37,12 +45,12 @@ init _ =
     , Cmd.none  
     )
 
--- INIT
 initBall : Ball
 initBall =
     { x = 250
     , y = 250
     , radius = 10
+    , vx = 2
     , vy = 4
     }
 
@@ -83,16 +91,30 @@ update msg model =
                         ball.vy
                 updateBall = 
                      { ball
-                        | y = ball.y + vy
+                        | x = ball.x + ball.vx
+                        , y = ball.y + vy
                         , vy = vy
                     }
             in ( { model | ball = updateBall }, Cmd.none )
+
+        KeyDown playerAction ->
+            case playerAction of
+                PaddleLeft ->
+                    ( { model | paddle = model.paddle |> updatePaddle -10}, Cmd.none )
+                PaddleRight ->
+                    ( { model | paddle = model.paddle |> updatePaddle 10}, Cmd.none )
+
+updatePaddle : Int -> Paddle -> Paddle
+updatePaddle amount paddle =
+    { paddle | x = paddle.x + amount  |> clamp 0 (500 - paddle.width)}
+
 
 shouldBallBounce : Paddle -> Ball -> Bool
 shouldBallBounce paddle ball = 
     (ball.y + ball.radius >= paddle.y)
         && (ball.x >= paddle.x)
         && (ball.x <= paddle.x + 50)
+
 -- VIEW 
 view : Model -> Svg.Svg Msg
 view { ball, paddle } = 
@@ -128,4 +150,22 @@ viewPaddle paddle =
         []
 subscriptions : Model -> Sub Msg
 subscriptions _ = 
-    Browser.Events.onAnimationFrameDelta OnAnimationFrame
+    Sub.batch
+        [ Browser.Events.onAnimationFrameDelta OnAnimationFrame
+        , Browser.Events.onKeyDown (Decode.map KeyDown keyDecoder)
+        ]
+
+keyDecoder : Decode.Decoder PlayerAction
+keyDecoder = 
+    Decode.field "key" Decode.string
+        |> Decode.andThen keyToPlayerAction
+
+keyToPlayerAction : String -> Decode.Decoder PlayerAction
+keyToPlayerAction keyString = 
+    case keyString of
+        "ArrowLeft" ->
+            Decode.succeed PaddleLeft
+        "ArrowRight" ->
+            Decode.succeed PaddleRight
+        _ ->
+            Decode.fail "not an event we care about"
