@@ -216,7 +216,7 @@ update msg model =
                                 alwaysSleepDone =
                                     always SleepDone
                                 delayCmd = 
-                                    Process.sleep 500
+                                    Process.sleep 1000
                                         |> Task.perform alwaysSleepDone
                             in
                                 ( Ended, delayCmd )
