@@ -5158,7 +5158,7 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$initBall = {radius: 10, vy: 4, x: 250, y: 250};
+var $author$project$Main$initBall = {radius: 10, vx: 2, vy: 4, x: 250, y: 250};
 var $author$project$Main$initPaddle = {height: 10, width: 50, x: 225, y: 480};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -5745,6 +5745,14 @@ var $author$project$Main$shouldBallBounce = F2(
 	function (paddle, ball) {
 		return (_Utils_cmp(ball.y + ball.radius, paddle.y) > -1) && ((_Utils_cmp(ball.x, paddle.x) > -1) && (_Utils_cmp(ball.x, paddle.x + 50) < 1));
 	});
+var $author$project$Main$shouldBallBounceHorizontally = function (ball) {
+	var radius = ball.radius;
+	return (_Utils_cmp(ball.x, 10 + radius) < 1) || (_Utils_cmp(ball.x, 490 - radius) > -1);
+};
+var $author$project$Main$shouldBallBounceVertically = function (ball) {
+	var radius = ball.radius;
+	return (_Utils_cmp(ball.y, 10 + radius) < 1) || (_Utils_cmp(ball.y, 490 - radius) > -1);
+};
 var $elm$core$Basics$clamp = F3(
 	function (low, high, number) {
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
@@ -5754,22 +5762,25 @@ var $author$project$Main$updatePaddle = F2(
 		return _Utils_update(
 			paddle,
 			{
-				x: A3($elm$core$Basics$clamp, 0, 500 - paddle.width, paddle.x + amount)
+				x: A3($elm$core$Basics$clamp, 10, 490 - paddle.width, paddle.x + amount)
 			});
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'OnAnimationFrame') {
 			var timeDelta = msg.a;
+			var shouldBounceVertically = $author$project$Main$shouldBallBounceVertically(model.ball);
+			var shouldBounceHorizontally = $author$project$Main$shouldBallBounceHorizontally(model.ball);
 			var shouldBounce = A2(
 				$elm$core$Debug$log,
-				'shouldBounce',
+				'shouldPaddleBounce',
 				A2($author$project$Main$shouldBallBounce, model.paddle, model.ball));
 			var ball = model.ball;
-			var vy = shouldBounce ? (ball.vy * (-1)) : ball.vy;
+			var vx = shouldBounceHorizontally ? (ball.vx * (-1)) : ball.vx;
+			var vy = (shouldBounce || shouldBounceVertically) ? (ball.vy * (-1)) : ball.vy;
 			var updateBall = _Utils_update(
 				ball,
-				{vy: vy, y: ball.y + vy});
+				{vx: vx, vy: vy, x: ball.x + vx, y: ball.y + vy});
 			return _Utils_Tuple2(
 				_Utils_update(
 					model,
@@ -5796,16 +5807,16 @@ var $author$project$Main$update = F2(
 			}
 		}
 	});
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $author$project$Main$viewBall = function (_v0) {
 	var x = _v0.x;
 	var y = _v0.y;
@@ -5817,14 +5828,12 @@ var $author$project$Main$viewBall = function (_v0) {
 				$elm$core$String$fromInt(x)),
 				$elm$svg$Svg$Attributes$cy(
 				$elm$core$String$fromInt(y)),
-				$elm$svg$Svg$Attributes$fill('green'),
-				$elm$svg$Svg$Attributes$stroke('black'),
+				$elm$svg$Svg$Attributes$fill('#eb7d46'),
 				$elm$svg$Svg$Attributes$r('10')
 			]),
 		_List_Nil);
 };
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
@@ -5840,7 +5849,8 @@ var $author$project$Main$viewPaddle = function (paddle) {
 				$elm$svg$Svg$Attributes$width(
 				$elm$core$String$fromInt(paddle.width)),
 				$elm$svg$Svg$Attributes$height(
-				$elm$core$String$fromInt(paddle.height))
+				$elm$core$String$fromInt(paddle.height)),
+				$elm$svg$Svg$Attributes$fill('#dd6168')
 			]),
 		_List_Nil);
 };
@@ -5854,12 +5864,45 @@ var $author$project$Main$view = function (_v0) {
 				$elm$svg$Svg$Attributes$width('500'),
 				$elm$svg$Svg$Attributes$height('500'),
 				$elm$svg$Svg$Attributes$viewBox('0 0 500 500'),
-				$elm$svg$Svg$Attributes$style('background: #efefef')
+				$elm$svg$Svg$Attributes$style('background: #d5e7e8')
 			]),
 		_List_fromArray(
 			[
 				$author$project$Main$viewBall(ball),
-				$author$project$Main$viewPaddle(paddle)
+				$author$project$Main$viewPaddle(paddle),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x('0'),
+						$elm$svg$Svg$Attributes$y('0'),
+						$elm$svg$Svg$Attributes$width('500'),
+						$elm$svg$Svg$Attributes$height('10'),
+						$elm$svg$Svg$Attributes$fill('#034e5e')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x('0'),
+						$elm$svg$Svg$Attributes$y('0'),
+						$elm$svg$Svg$Attributes$width('10'),
+						$elm$svg$Svg$Attributes$height('500'),
+						$elm$svg$Svg$Attributes$fill('#034e5e')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x('490'),
+						$elm$svg$Svg$Attributes$y('0'),
+						$elm$svg$Svg$Attributes$width('10'),
+						$elm$svg$Svg$Attributes$height('500'),
+						$elm$svg$Svg$Attributes$fill('#034e5e')
+					]),
+				_List_Nil)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
