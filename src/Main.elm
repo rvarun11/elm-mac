@@ -249,8 +249,6 @@ getGameState ball =
     else
         Playing
 
-
-
 shouldBallBounce : Paddle -> Ball -> Bool
 shouldBallBounce paddle ball = 
     (ball.y + ball.radius >= paddle.y)
