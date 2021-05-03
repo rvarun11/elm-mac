@@ -96,7 +96,7 @@ viewBall : Ball -> Shape Msg
 viewBall ball =
     circle ball.radius
         |> filled orange
-        |> move ( ball.x, ball.y)
+        |> move ( ball.x, ball.y )
 
 
 viewPaddle : Paddle -> Shape Msg
@@ -129,24 +129,35 @@ update msg model =
                 timeChange =
                     t - model.time
 
+                xNew =
+                    ball.x + ball.vx * timeChange
 
-                xNew = ball.x + ball.vx * timeChange
-                yNew = ball.y + ball.vy * timeChange
+                yNew =
+                    ball.y + ball.vy * timeChange
 
                 vNew =
-                    if xNew <= -180 || xNew >= 180
-                    then -ball.vx
-                    else  ball.vx
+                    if xNew <= -180 || xNew >= 180 then
+                        -ball.vx
 
-                (newScore, vyNew) = 
-                    if yNew <= -180
-                        && ball.x >= model.paddle.x - 25 
-                        && ball.x <= model.paddle.x + 25
-                    then (updateScore model.score, -ball.vy)
-                    else if yNew >= 180 -- for upper wall
-                    then (model.score, -ball.vy)
-                    else (model.score, ball.vy)
-                
+                    else
+                        ball.vx
+
+                ( newScore, vyNew ) =
+                    if
+                        yNew <= -180
+                            && ball.x >= model.paddle.x - 25
+                            && ball.x <= model.paddle.x + 25
+                    then
+                        ( updateScore model.score, -ball.vy )
+
+                    else if
+                        yNew >= 180 -- for upper wall
+                    then
+                        ( model.score, -ball.vy )
+
+                    else
+                        ( model.score, ball.vy )
+
                 updatedBall =
                     { ball
                         | x = xNew
@@ -154,7 +165,6 @@ update msg model =
                         , vx = vNew
                         , vy = vyNew
                     }
-
             in
             case getGameState ball of
                 Playing ->
