@@ -2,4 +2,4 @@
 
 A single player squash game built in Elm
 
-<img src="https://media.giphy.com/media/OCXJ7N0lB2E2A5Q9CN/giphy.gif" width="500">
+<img src="https://github.com/rvarun11/elm-squash/blob/main/new-demo.gif" width="500">
