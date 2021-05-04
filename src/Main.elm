@@ -162,7 +162,7 @@ update msg model =
                     { ball
                         | x = xNew
                         , y = yNew
-                        , vx = vyNew
+                        , vx = vxNew
                         , vy = vyNew
                     }
             in
