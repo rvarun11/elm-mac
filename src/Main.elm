@@ -135,7 +135,7 @@ update msg model =
                 yNew =
                     ball.y + ball.vy * timeChange
 
-                vNew =
+                vxNew =
                     if xNew <= -180 || xNew >= 180 then
                         -ball.vx
 
@@ -162,7 +162,7 @@ update msg model =
                     { ball
                         | x = xNew
                         , y = yNew
-                        , vx = vNew
+                        , vx = vyNew
                         , vy = vyNew
                     }
             in
