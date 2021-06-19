@@ -7,7 +7,8 @@ import GraphicSVG.EllieApp exposing (graphicsApp)
 type alias Trunk =
     { x1 : Float
     , y1 : Float
-    , x2 : Float, y2 : Float
+    , x2 : Float
+    , y2 : Float
     }
 
 
