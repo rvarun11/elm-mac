@@ -4,81 +4,116 @@ import GraphicSVG exposing (..)
 import GraphicSVG.EllieApp exposing (graphicsApp)
 
 
-type alias Trunk =
-    { x1 : Float
-    , y1 : Float
-    , x2 : Float
-    , y2 : Float
-    }
+
+-- using Records
+-- type alias Trunk =
+--     { x1 : Float
+--     , y1 : Float
+--     , x2 : Float
+--     , y2 : Float
+--     }
+-- type alias Leaf =
+--     { width : Float
+--     , height : Float
+--     , radius : Float
+--     , angle : Float
+--     }
+-- initTrunk : Trunk
+-- initTrunk =
+--     { x1 = 0
+--     , y1 = -20
+--     , x2 = 0
+--     , y2 = 100
+--     }
+-- initLeaf : Leaf
+-- initLeaf =
+--     { width = 10
+--     , height = 20
+--     , radius = 20
+--     , angle = 120
+--     }
+-- viewTrunk : Trunk -> Shape msg
+-- viewTrunk trunk =
+--     line ( trunk.x1, trunk.y1 ) ( trunk.x2, trunk.y2 ) |> outlined (solid 1) darkBrown
+-- viewLeaves : Leaf -> Float -> Float -> Shape msg
+-- viewLeaves leaf cx cy =
+--     group
+--         [ roundedRect leaf.width leaf.height leaf.radius
+--             |> filled green
+--             |> rotate (degrees leaf.angle)
+--             |> move ( 10 - cx, cy )
+--         , roundedRect leaf.width leaf.height leaf.radius
+--             |> filled green
+--             |> rotate (degrees leaf.angle)
+--             |> move ( 10 - cx, cy )
+--             |> mirrorX
+--         ]
+-- viewPlant : Trunk -> Leaf -> Float -> Float -> Shape msg
+-- viewPlant trunk leaf cx cy =
+--     group
+--         [ viewTrunk trunk
+--         , if cy == distanceFormula trunk.x1 trunk.y1 trunk.x2 trunk.y2 then
+--             group []
+--           else
+--             group
+--                 [ viewLeaves leaf cx cy
+--                 , viewPlant
+--                     trunk
+--                     { leaf | width = leaf.width - 1, height = leaf.height - 1, radius = leaf.radius - 1 }
+--                     (cx + 1)
+--                     (cy + 20)
+--                 ]
+--         ]
+-- Pure Functions
 
 
-type alias Leaf =
-    { width : Float
-    , height : Float
-    , radius : Float
-    , angle : Float
-    }
+trunk : Float -> Float -> Float -> Float -> Shape msg
+trunk x1 y1 x2 y2 =
+    line ( x1, y1 ) ( x2, y2 ) |> outlined (solid 2) darkBrown
 
 
-initTrunk : Trunk
-initTrunk =
-    { x1 = 0
-    , y1 = -20
-    , x2 = 0
-    , y2 = 100
-    }
+leaf : Float -> Float -> Float -> Float -> Shape msg
+leaf width height radius angle =
+    roundedRect width height radius
+        |> filled darkGreen
+        |> rotate (degrees angle)
 
 
-initLeaf : Leaf
-initLeaf =
-    { width = 10
-    , height = 20
-    , radius = 20
-    , angle = 120
-    }
+
+{--
+1. X1, Y1, X2, Y2 are coordinates for the Trunk
+2. Width, Height, Radius, Angle is for drawing Leaves
+3. CX, CY are counters for our Recursion
+--}
 
 
-viewTrunk : Trunk -> Shape msg
-viewTrunk trunk =
-    line ( trunk.x1, trunk.y1 ) ( trunk.x2, trunk.y2 ) |> outlined (solid 1) darkBrown
-
-
-viewLeaves : Leaf -> Float -> Float -> Shape msg
-viewLeaves leaf cx cy =
+leaves : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Shape msg
+leaves width height radius angle x1 y1 x2 y2 cx cy =
     group
-        [ roundedRect leaf.width leaf.height leaf.radius
-            |> filled green
-            |> rotate (degrees leaf.angle)
-            |> move ( 10 - cx, cy )
-        , roundedRect leaf.width leaf.height leaf.radius
-            |> filled green
-            |> rotate (degrees leaf.angle)
-            |> move ( 10 - cx, cy )
-            |> mirrorX
-        ]
-
-
-viewPlant : Trunk -> Leaf -> Float -> Float -> Shape msg
-viewPlant trunk leaf cx cy =
-    group
-        [ viewTrunk trunk
-        , if cy == dist trunk.x1 trunk.y1 trunk.x2 trunk.y2 then
+        [ if cy == distanceFormula x1 y1 x2 y2 then
             group []
 
           else
             group
-                [ viewLeaves leaf cx cy
-                , viewPlant
-                    trunk
-                    { leaf | width = leaf.width - 1, height = leaf.height - 1, radius = leaf.radius - 1 }
+                [ leaf width height radius angle |> move ( 10 - cx, cy )
+                , leaf width height radius angle |> move ( 10 - cx, cy ) |> mirrorX
+                , leaves
+                    (width - 1)
+                    (height - 1)
+                    (radius - 1)
+                    (angle - 1)
+                    x1
+                    x2
+                    y1
+                    y2
                     (cx + 1)
                     (cy + 20)
                 ]
         ]
 
 
-dist : Float -> Float -> Float -> Float -> Float
-dist x1 y1 x2 y2 =
+distanceFormula : Float -> Float -> Float -> Float -> Float
+distanceFormula x1 y1 x2 y2 =
     sqrt ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 
 
@@ -90,9 +125,9 @@ view : Collage msg
 view =
     collage 300
         300
-        [ rect 300 300 |> filled white
-        , graphPaper 10
-        , viewPlant initTrunk initLeaf 0 0
+        [ graphPaper 10
+        , trunk 0 -20 0 100
+        , leaves 10 20 20 120 0 -20 0 100 0 0
         ]
 
 
