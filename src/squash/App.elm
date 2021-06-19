@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Squash.App exposing (..)
 
 import GraphicSVG exposing (..)
 import GraphicSVG.App exposing (..)
