@@ -21,22 +21,16 @@ branch x y len angle =
 
     else
         let
-            x1 =
+            newX =
                 x + len * cos angle
 
-            y1 =
-                y + len * sin angle
-
-            x2 =
-                x + len * cos angle
-
-            y2 =
+            newY =
                 y + len * sin angle
         in
         group
-            [ openPolygon [ ( x2, y2 ), ( x, y ), ( x1, y1 ) ] |> color
-            , branch x1 y1 (len * 0.75) (angle - 1)
-            , branch x2 y2 (len * 0.75) (angle + 1)
+            [ openPolygon [ ( newX, newY ), ( x, y ), ( newX, newY ) ] |> color
+            , branch newX newY (len * 0.75) (angle - 1)
+            , branch newX newY (len * 0.75) (angle + 1)
             ]
 
 
