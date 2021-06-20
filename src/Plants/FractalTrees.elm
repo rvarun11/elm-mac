@@ -4,41 +4,41 @@ import GraphicSVG exposing (..)
 import GraphicSVG.EllieApp exposing (graphicsApp)
 
 
-colr : Stencil -> Shape msg
-colr =
-    outlined (solid 1) black
+color : Stencil -> Shape msg
+color =
+    outlined (solid 1) darkGreen
 
 
-branch : Float -> Float -> Float -> Shape msg
-branch x y angle =
-    let
-        y2 =
-            y - 10
-
-        x2 =
-            x + y2 * sin (degrees 0)
-    in
-    group
-        [ line ( 0, 0 ) ( x, y ) |> colr
-        , line ( x, y ) ( x2, y2 ) |> colr
-        ]
+trunk : Float -> Float -> Float -> Float -> Shape msg
+trunk x1 y1 x2 y2 =
+    line ( x1, y1 ) ( x2, y2 ) |> outlined (solid 1) darkBrown
 
 
-fTrees : Float -> Float -> Float -> Shape msg
+branch : Float -> Float -> Float -> Float -> Shape msg
+branch x y len angle =
+    if len <= 1 then
+        group []
 
+    else
+        let
+            x1 =
+                x + len * cos angle
 
-open x y angle =
-    let
-        y2 =
-            y + y
+            y1 =
+                y + len * sin angle
 
-        x2 =
-            x + y2 * tan (degrees 40)
-    in
-    group
-        [ openPolygon [ ( x, y ), ( x, y ), ( x2, y2 ) ]
-            |> colr
-        ]
+            x2 =
+                x + len * cos angle
+
+            y2 =
+                y + len * sin angle
+        in
+        group
+            [ openPolygon [ ( x2, y2 ), ( x, y ), ( x1, y1 ) ] |> color
+            , trunk 0 0 0 -120
+            , branch x1 y1 (len * 0.75) (angle - 1)
+            , branch x2 y2 (len * 0.75) (angle + 1)
+            ]
 
 
 
@@ -49,9 +49,9 @@ view : Collage msg
 view =
     collage 300
         300
-        [ rect 300 300 |> filled lightGrey
-        , graphPaper 10
-        , branch 20 20 0
+        [ graphPaper 10
+        , branch 0 0 30 (pi / 4)
+        , branch 0 0 30 (3 * pi / 4)
         ]
 
 

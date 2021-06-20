@@ -81,8 +81,8 @@ leaf width height radius angle =
 
 
 {--
-1. X1, Y1, X2, Y2 are coordinates for the Trunk
-2. Width, Height, Radius, Angle is for drawing Leaves
+1. Width, Height, Radius, Angle is for drawing Leaves using roundedRect
+2. X1, Y1, X2, Y2 are coordinates for the Trunk using line
 3. CX, CY are counters for our Recursion
 --}
 
