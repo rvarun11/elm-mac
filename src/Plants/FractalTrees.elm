@@ -35,7 +35,6 @@ branch x y len angle =
         in
         group
             [ openPolygon [ ( x2, y2 ), ( x, y ), ( x1, y1 ) ] |> color
-            , trunk 0 0 0 -120
             , branch x1 y1 (len * 0.75) (angle - 1)
             , branch x2 y2 (len * 0.75) (angle + 1)
             ]
@@ -50,6 +49,7 @@ view =
     collage 300
         300
         [ graphPaper 10
+        , trunk 0 0 0 -120
         , branch 0 0 30 (pi / 4)
         , branch 0 0 30 (3 * pi / 4)
         ]
