@@ -1,4 +1,4 @@
-module Plants.Generic exposing (main)
+module Plants.Basic exposing (main)
 
 import GraphicSVG exposing (..)
 import GraphicSVG.EllieApp exposing (graphicsApp)
@@ -6,11 +6,6 @@ import GraphicSVG.EllieApp exposing (graphicsApp)
 
 
 -- Pure Functions
-
-
-trunk : Float -> Float -> Float -> Float -> Shape msg
-trunk x1 y1 x2 y2 =
-    line ( x1, y1 ) ( x2, y2 ) |> outlined (solid 2) darkBrown
 
 
 leaf : Float -> Float -> Float -> Float -> Shape msg
@@ -28,8 +23,8 @@ leaf width height radius angle =
 --}
 
 
-leaves : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Shape msg
-leaves width height radius angle x1 y1 x2 y2 cx cy =
+leaves : ( Float, Float, Float ) -> Float -> ( Float, Float ) -> ( Float, Float ) -> ( Float, Float ) -> Shape msg
+leaves ( width, height, radius ) angle ( x1, y1 ) ( x2, y2 ) ( cx, cy ) =
     group
         [ if cy == distanceFormula x1 y1 x2 y2 then
             group []
@@ -39,18 +34,18 @@ leaves width height radius angle x1 y1 x2 y2 cx cy =
                 [ leaf width height radius angle |> move ( 10 - cx, cy )
                 , leaf width height radius angle |> move ( 10 - cx, cy ) |> mirrorX
                 , leaves
-                    (width - 1)
-                    (height - 1)
-                    (radius - 1)
+                    ( width - 1, height - 1, radius - 1 )
                     (angle - 1)
-                    x1
-                    x2
-                    y1
-                    y2
-                    (cx + 1)
-                    (cy + 20)
+                    ( x1, y2 )
+                    ( x2, y2 )
+                    ( cx + 1, cy + 20 )
                 ]
         ]
+
+
+trunk : ( Float, Float ) -> ( Float, Float ) -> Shape msg
+trunk ( x1, y1 ) ( x2, y2 ) =
+    line ( x1, y1 ) ( x2, y2 ) |> outlined (solid 2) darkBrown
 
 
 distanceFormula : Float -> Float -> Float -> Float -> Float
@@ -67,8 +62,8 @@ view =
     collage 300
         300
         [ graphPaper 10
-        , trunk 0 -20 0 100
-        , leaves 10 20 20 120 0 -20 0 100 0 0
+        , trunk ( 0, -20 ) ( 0, 100 )
+        , leaves ( 10, 20, 20 ) 120 ( 0, -20 ) ( 0, 100 ) ( 0, 0 )
         ]
 
 
