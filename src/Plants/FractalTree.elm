@@ -1,4 +1,4 @@
-module Plants.FractalTrees exposing (main)
+module Plants.FractalTree exposing (main)
 
 import GraphicSVG exposing (..)
 import GraphicSVG.EllieApp exposing (graphicsApp)
