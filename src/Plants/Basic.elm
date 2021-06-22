@@ -36,7 +36,7 @@ leaves ( width, height, radius ) angle ( x1, y1 ) ( x2, y2 ) ( cx, cy ) =
                 , leaves
                     ( width - 1, height - 1, radius - 1 )
                     (angle - 1)
-                    ( x1, y2 )
+                    ( x1, y1 )
                     ( x2, y2 )
                     ( cx + 1, cy + 20 )
                 ]
@@ -67,7 +67,6 @@ view =
         ]
 
 
-main : GraphicSVG.EllieApp.GraphicsApp
 main =
     graphicsApp { view = view }
 
