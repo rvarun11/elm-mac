@@ -1,7 +1,8 @@
-module Plants.Basic2 exposing (..)
+module Plants.Tulsi exposing (..)
 
 import GraphicSVG exposing (..)
 import GraphicSVG.EllieApp exposing (graphicsApp)
+import Svg.Attributes exposing (fill)
 
 
 
@@ -16,14 +17,30 @@ trunk ( x1, y1 ) ( x2, y2 ) =
 leaves : ( Float, Float ) -> Shape msg
 leaves ( x, y ) =
     group
-        [ oval 10 6 |> filled darkGreen |> rotate (degrees 45) |> move ( x, y )
-        , oval 10 6 |> filled darkGreen |> rotate (degrees 45) |> move ( x, y ) |> mirrorX
+        [ curve ( 0, 0 )
+            [ Pull ( 0, 5 ) ( 10, 0 )
+            , Pull ( 0, -5 ) ( 0, 0 )
+            , Pull ( 0 - 5, 0 ) ( 0, 10 )
+            , Pull ( 0 + 5, 0 ) ( 0, 0 )
+            , Pull ( 0 - 5, -5 ) ( -10, 0 )
+            , Pull ( 0, 5 ) ( 0, 0 )
+            ]
+            |> filled darkGreen
+            |> rotate (degrees 135)
+            |> move ( x, y )
+        , curve ( 0, 0 )
+            [ Pull ( 0, 5 ) ( 10, 0 )
+            , Pull ( 0, -5 ) ( 0, 0 )
+            , Pull ( 0 - 5, 0 ) ( 0, 10 )
+            , Pull ( 0 + 5, 0 ) ( 0, 0 )
+            , Pull ( 0 - 5, -5 ) ( -10, 0 )
+            , Pull ( 0, 5 ) ( 0, 0 )
+            ]
+            |> filled darkGreen
+            |> rotate (degrees 145)
+            |> move ( x, y )
+            |> mirrorX
         ]
-
-
-branchColor : Stencil -> Shape msg
-branchColor =
-    outlined (solid 1) darkBrown
 
 
 branch : ( Float, Float ) -> ( Float, Float ) -> Shape msg
@@ -36,9 +53,9 @@ branch ( x, y ) ( len, angle ) =
             y + len * sin angle
     in
     group
-        [ line ( x, y ) ( newX, newY ) |> branchColor
-        , line ( x, y ) ( newX, newY ) |> branchColor |> mirrorX
-        , leaves ( newX, newY )
+        [ curve ( x, y ) [ Pull ( newX, newY ) ( newX - 3, newY + 5 ) ] |> outlined (solid 1) darkBrown
+        , curve ( x, y ) [ Pull ( newX, newY ) ( newX - 3, newY + 5 ) ] |> outlined (solid 1) darkBrown |> mirrorX
+        , leaves ( newX - 3, newY + 5 )
         ]
 
 
@@ -77,5 +94,6 @@ view =
         ]
 
 
+main : GraphicSVG.EllieApp.GraphicsApp
 main =
     graphicsApp { view = view }

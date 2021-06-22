@@ -51,5 +51,6 @@ view =
         ]
 
 
+main : GraphicSVG.EllieApp.GraphicsApp
 main =
     graphicsApp { view = view }

@@ -144,14 +144,20 @@ update msg model =
 
                 ( newScore, vyNew ) =
                     if
-                        yNew <= -180
-                            && ball.x >= model.paddle.x - 25
-                            && ball.x <= model.paddle.x + 25
+                        yNew
+                            <= -180
+                            && ball.x
+                            >= model.paddle.x
+                            - 25
+                            && ball.x
+                            <= model.paddle.x
+                            + 25
                     then
                         ( updateScore model.score, -ball.vy )
 
                     else if
-                        yNew >= 180 -- for upper wall
+                        yNew >= 180
+                        -- for upper wall
                     then
                         ( model.score, -ball.vy )
 
@@ -216,6 +222,7 @@ getGameState ball =
 -- MAIN
 
 
+main : GameApp Model Msg
 main =
     gameApp Tick
         { model = init
